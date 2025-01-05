@@ -1,68 +1,48 @@
-const express = require('express');
-const { GoogleGenerativeAI } = require('@google/generative-ai');
 const { Client } = require('whatsapp-web.js');
-const qrcode = require('qrcode');
-const path = require('path');
+const qrcode = require('qrcode-terminal');
+const express = require('express');
+const cors = require('cors');
 require('dotenv').config();
 
-const genAI = new GoogleGenerativeAI(process.env.API_KEY);
-const model = genAI.getGenerativeModel({
-    model: 'gemini-1.5-flash'
-});
+// Initialize express app
+const app = express();
+const port = process.env.PORT || 5000;
 
-// Create a new client instance
+// CORS middleware to allow requests from your front-end
+app.use(cors());
+
+// Initialize WhatsApp Web Client
 const client = new Client();
 
-// Create an Express server
-const app = express();
-const port = 3000;
+let connectionStatus = 'disconnected';
 
-// Serve static files (including QR code image)
-app.use(express.static(path.join(__dirname, 'public')));
-
-// Serve the index.html page (if needed, but it's mainly for your backend)
-app.get('/', (req, res) => {
-    res.sendFile(path.join(__dirname, 'index.html'));
-});
-
-// Serve the QR code image
-app.get('/qr.png', (req, res) => {
-    res.sendFile(path.join(__dirname, 'public', 'qr.png'));
-});
-
-// Check the status of the WhatsApp client (used by the front-end)
-app.get('/status', (req, res) => {
-    res.json({ status: client.ping() ? 'connected' : 'disconnected' });
-});
-
-// When the client is ready
+// When the client is ready, set status to connected
 client.once('ready', () => {
     console.log('Client is ready!');
+    connectionStatus = 'connected';
 });
 
-// When the client receives a QR code
+// When QR code is generated, send it to the frontend
 client.on('qr', (qr) => {
-    // Generate the QR code and save it as a static image in the public folder
-    qrcode.toFile(path.join(__dirname, 'public', 'qr.png'), qr, (err) => {
-        if (err) {
-            console.error('Error generating QR code:', err);
-        } else {
-            console.log('QR code saved as qr.png');
-        }
+    // Here, you can generate the QR code in your terminal
+    qrcode.generate(qr, { small: true });
+
+    // The QR code URL will be provided to the front-end
+    app.get('/qr.png', (req, res) => {
+        res.setHeader('Content-Type', 'image/png');
+        qrcode.toFileStream(res, qr); // Generate QR code as PNG image
     });
 });
 
-// When a message is created (not used here, but part of your logic)
-client.on('message_create', async (message) => {
-    if (message.body.toString().toLowerCase().startsWith('ping,')) {
-        const result = await model.generateContent(message.body);
-        console.log(result.response.text());
-        client.sendMessage(message.from, result.response.text()); // send response to WhatsApp
-    }
+// Handle status endpoint
+app.get('/status', (req, res) => {
+    res.json({ status: connectionStatus });
 });
 
-// Start the WhatsApp client and the server
+// Start WhatsApp client
 client.initialize();
+
+// Start express server
 app.listen(port, () => {
-    console.log(`Server running at http://localhost:${port}`);
+    console.log(`Server is running on port ${port}`);
 });
