@@ -4,11 +4,39 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>WhatsApp QR Code</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+        }
+        #qrImage {
+            width: 300px;
+            height: 300px;
+        }
+        h1 {
+            margin-bottom: 20px;
+        }
+    </style>
 </head>
 <body>
     <h1>Scan the QR code to login to WhatsApp</h1>
     <div>
-        <img src="qr.png" alt="QR Code" id="qrImage">
+        <!-- QR code will be displayed here -->
+        <img src="https://your-server-domain/qr.png" alt="QR Code" id="qrImage">
     </div>
+
+    <script>
+        // This script will periodically check for updates from the server
+        setInterval(() => {
+            fetch('https://your-server-domain/status')
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'connected') {
+                        alert('WhatsApp is connected!');
+                    }
+                });
+        }, 5000); // Check status every 5 seconds
+    </script>
 </body>
 </html>
