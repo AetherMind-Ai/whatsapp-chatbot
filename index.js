@@ -17,12 +17,22 @@ const client = new Client();
 const app = express();
 const port = 3000;
 
-// Serve static files
+// Serve static files (including QR code image)
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Serve the index.html page
+// Serve the index.html page (if needed, but it's mainly for your backend)
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, 'index.html'));
+});
+
+// Serve the QR code image
+app.get('/qr.png', (req, res) => {
+    res.sendFile(path.join(__dirname, 'public', 'qr.png'));
+});
+
+// Check the status of the WhatsApp client (used by the front-end)
+app.get('/status', (req, res) => {
+    res.json({ status: client.ping() ? 'connected' : 'disconnected' });
 });
 
 // When the client is ready
@@ -30,9 +40,9 @@ client.once('ready', () => {
     console.log('Client is ready!');
 });
 
-// When the client receives a QR Code
+// When the client receives a QR code
 client.on('qr', (qr) => {
-    // Generate the QR code and save it as a static image
+    // Generate the QR code and save it as a static image in the public folder
     qrcode.toFile(path.join(__dirname, 'public', 'qr.png'), qr, (err) => {
         if (err) {
             console.error('Error generating QR code:', err);
@@ -42,16 +52,16 @@ client.on('qr', (qr) => {
     });
 });
 
+// When a message is created (not used here, but part of your logic)
 client.on('message_create', async (message) => {
     if (message.body.toString().toLowerCase().startsWith('ping,')) {
-        // Generate a response from Google AI
         const result = await model.generateContent(message.body);
         console.log(result.response.text());
         client.sendMessage(message.from, result.response.text()); // send response to WhatsApp
     }
 });
 
-// Start the client and server
+// Start the WhatsApp client and the server
 client.initialize();
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);
