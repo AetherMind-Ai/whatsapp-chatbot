@@ -23,13 +23,19 @@
     <h1>Scan the QR code to login to WhatsApp</h1>
     <div>
         <!-- QR code will be displayed here -->
-        <img src="https://whatsapp-chatbot-jet.vercel.app/qr.png" alt="QR Code" id="qrImage">
+        <img src="" alt="QR Code" id="qrImage">
     </div>
 
     <script>
+        // Function to update the QR code image on page load
+        window.onload = () => {
+            const qrImage = document.getElementById('qrImage');
+            qrImage.src = "https://whatsapp-chatbot-jet.vercel.app/qr.png";  // URL for the QR code
+        };
+
         // Check WhatsApp connection status every 5 seconds
         setInterval(() => {
-            fetch('https://whatsapp-chatbot-jet.vercel.app/status')  // Use your actual backend status endpoint
+            fetch('https://whatsapp-chatbot-jet.vercel.app/status')  // URL for the status endpoint
                 .then(response => response.json())
                 .then(data => {
                     if (data.status === 'connected') {
@@ -40,7 +46,6 @@
                     console.error('Error fetching status:', error);
                 });
         }, 5000); // Check every 5 seconds
-
     </script>
 </body>
 </html>
