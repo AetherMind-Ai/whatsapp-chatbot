@@ -27,25 +27,30 @@
     </div>
 
     <script>
-        // Function to update the QR code image on page load
+        // This function will update the QR code image when the page loads
         window.onload = () => {
+            // Select the image element where the QR code will be displayed
             const qrImage = document.getElementById('qrImage');
-            qrImage.src = "https://whatsapp-chatbot-jet.vercel.app/qr.png";  // URL for the QR code
+            // Set the QR code image source URL
+            qrImage.src = "https://whatsapp-chatbot-jet.vercel.app/qr.png";  // QR code image hosted on your server
         };
 
         // Check WhatsApp connection status every 5 seconds
         setInterval(() => {
-            fetch('https://whatsapp-chatbot-jet.vercel.app/status')  // URL for the status endpoint
-                .then(response => response.json())
+            // Fetch the status from the server
+            fetch('https://whatsapp-chatbot-jet.vercel.app/status')  // Endpoint that checks WhatsApp connection status
+                .then(response => response.json())  // Parse the JSON response
                 .then(data => {
+                    // Check if the status is "connected"
                     if (data.status === 'connected') {
                         alert('WhatsApp is connected!');
                     }
                 })
                 .catch(error => {
+                    // Log errors if the fetch request fails
                     console.error('Error fetching status:', error);
                 });
-        }, 5000); // Check every 5 seconds
+        }, 5000); // Repeat every 5 seconds
     </script>
 </body>
 </html>
